@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Upload and Download File</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link to external stylesheet -->
+</head>
+<body>
+    <h1>Upload and Download File</h1>
+
+    <!-- Upload Section -->
+    <h2>Upload File</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileUpload" name="fileUpload" accept=".txt" required />
+        <select id="encryptionMethod" name="encryptionMethod">
+            <option value="AES">AES</option>
+            <option value="DES">DES</option>
+            <option value="RC4">RC4</option>
+        </select>
+        <input type="text" id="key" placeholder="Encryption Key" required />
+        <button type="submit">Upload</button>
+    </form>
+    
+    <p id="uploadMessage"></p> <!-- Message for upload status -->
+
+    <!-- Decrypt Section -->
+    <h2>Decrypt File</h2>
+    <form id="decryptForm">
+        <input type="text" id="fileName" placeholder="Encrypted File Name" required />
+        <input type="text" id="decryptKey" placeholder="Decryption Key" required />
+        <select id="decryptMethod" name="decryptMethod">
+            <option value="AES">AES</option>
+            <option value="DES">DES</option>
+            <option value="RC4">RC4</option>
+        </select>
+        <button type="submit">Decrypt and Download</button>
+    </form>
+    <p id="decryptMessage"></p> <!-- Message for decryption status -->
+
+    <!-- Go Back to Homepage button -->
+    <button onclick="window.location.href='/';">Go Back to Homepage</button>
+
+    <script>
+        // Handle file upload
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission behavior
+
+            const fileInput = document.getElementById('fileUpload');
+            const encryptionMethod = document.getElementById('encryptionMethod').value;
+            const key = document.getElementById('key').value;
+
+            const formData = new FormData(); // Create form data object to hold the upload data
+            formData.append('fileUpload', fileInput.files[0]);
+            formData.append('encryptionMethod', encryptionMethod);
+            formData.append('key', key);
+
+            try {
+                const response = await fetch('/files/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok'); // Handle network errors
+                }
+
+                const data = await response.json(); // Parse the JSON response
+                document.getElementById('uploadMessage').textContent = data.message; // Display upload status message
+            } catch (error) {
+                document.getElementById('uploadMessage').textContent = 'Upload failed: ' + error.message; // Handle upload errors
+            }
+        });
+
+        // Handle file decryption and download
+        document.getElementById('decryptForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission behavior
+
+            const fileName = document.getElementById('fileName').value;
+            const decryptKey = document.getElementById('decryptKey').value;
+            const decryptMethod = document.getElementById('decryptMethod').value;
+
+            try {
+                const response = await fetch('/files/decrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fileName,
+                        key: decryptKey,
+                        encryptionMethod: decryptMethod,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Decryption failed'); // Handle decryption errors
+                }
+
+                const blob = await response.blob(); // Retrieve the decrypted file as a blob
+                const downloadLink = document.createElement('a'); // Create a temporary link element
+                downloadLink.href = window.URL.createObjectURL(blob); // Create a URL for the blob
+                downloadLink.download = `decrypted_${fileName}`; // Set the file name for the download
+                downloadLink.click(); // Trigger the download
+            } catch (error) {
+                document.getElementById('decryptMessage').textContent = 'Decryption failed: ' + error.message; // Handle decryption errors
+            }
+        });
+    </script>
+</body>
+</html>

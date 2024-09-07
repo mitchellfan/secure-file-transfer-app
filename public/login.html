@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm" autocomplete="off"> <!-- Prevents autocomplete for security -->
+        <input type="text" id="username" placeholder="Username" required />
+        
+        <input type="password" id="password" placeholder="Password" required />
+        <span id="togglePassword" class="show-password" style="cursor: pointer;">Show Password</span> <!-- Toggles password visibility -->
+
+        <button type="submit">Login</button>
+    </form>
+    <p id="loginMessage"></p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const loginMessage = document.getElementById('loginMessage');
+            const togglePasswordLabel = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            // Placeholder for valid login credentials
+            const validUsername = "user"; 
+            const validPassword = "password123"; 
+
+            // Event listener to toggle password visibility
+            togglePasswordLabel.addEventListener('click', () => {
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                togglePasswordLabel.textContent = isPassword ? 'Hide Password' : 'Show Password';
+            });
+
+            // Handle form submission
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent default form submission behavior
+                const username = document.getElementById('username').value;
+                const password = passwordInput.value;
+
+                // Validate credentials and redirect if successful
+                if (username === validUsername && password === validPassword) {
+                    window.location.href = 'upload-download.html'; // Redirect to upload page
+                } else {
+                    loginMessage.textContent = "Incorrect username or password."; // Display error message
+                }
+            });
+        });
+    </script>
+</body>
+</html>
